@@ -57,11 +57,12 @@ class GoogleUploader:
         self.entry = entry
         self.api = api
         self._lock = asyncio.Lock()
+        self._unsupported = False
         self._synced_ids: list[str] = list(entry.data.get("synced_entry_ids", []))[-200:]
 
     async def async_sync(self, snapshot: GlurooSnapshot) -> None:
         """Upload readings oldest-first and persist the bounded dedupe set."""
-        if self.api is None or not self.entry.options.get(CONF_SYNC_GOOGLE, True):
+        if self.api is None or self._unsupported or not self.entry.options.get(CONF_SYNC_GOOGLE, True):
             return
         async with self._lock:
             changed = False
@@ -71,7 +72,16 @@ class GoogleUploader:
                 try:
                     result = await self.api.async_create_blood_glucose(reading)
                 except GoogleHealthApiError as err:
-                    _LOGGER.warning("Google Health upload failed for %s: %s", reading.entry_id, err)
+                    if err.unsupported:
+                        self._unsupported = True
+                        _LOGGER.error(
+                            "Google Health API currently does not support creating blood-glucose "
+                            "data points; Gluroo sensors remain available but upload is disabled "
+                            "for this runtime: %s",
+                            err,
+                        )
+                    else:
+                        _LOGGER.warning("Google Health upload failed for %s: %s", reading.entry_id, err)
                     break
                 self._synced_ids.append(reading.entry_id)
                 self._synced_ids = self._synced_ids[-200:]

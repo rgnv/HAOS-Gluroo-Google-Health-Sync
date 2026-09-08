@@ -93,6 +93,10 @@ class GlurooApi:
 class GoogleHealthApiError(RuntimeError):
     """Raised when Google Health API rejects a write."""
 
+    def __init__(self, message: str, *, unsupported: bool = False) -> None:
+        super().__init__(message)
+        self.unsupported = unsupported
+
 
 class GoogleHealthApi:
     """Write Gluroo glucose readings through a Home Assistant OAuth session."""
@@ -117,7 +121,8 @@ class GoogleHealthApi:
             if response.status >= 400:
                 detail = await response.text()
                 raise GoogleHealthApiError(
-                    f"Google Health API HTTP {response.status}: {detail[:300]}"
+                    f"Google Health API HTTP {response.status}: {detail[:300]}",
+                    unsupported="Create is not supported" in detail,
                 )
             if response.status == 204:
                 return {"_http_status": response.status}

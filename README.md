@@ -1,8 +1,8 @@
 # Gluroo Google Health Sync
 
 A Home Assistant custom integration that reads glucose and related diabetes data from
-Gluroo Global Connect and optionally writes each new glucose reading to the Google
-Health API.
+Gluroo Global Connect and attempts to write each new glucose reading to the Google
+Health API when Google enables blood-glucose creation for the account/API release.
 
 ```text
 Gluroo mobile app / CGM
@@ -61,11 +61,22 @@ API secret token in the token field.
 6. In Home Assistant, register the client ID and secret under **Settings → Devices
    & services → Application credentials** for this integration.
 
-The integration writes the `blood-glucose` data type using mg/dL, marks readings as
+The integration sends the `blood-glucose` payload using mg/dL, marks readings as
 continuous glucose monitoring measurements with interstitial-fluid specimens, and
 uses the original Gluroo sample timestamp. It only requests the write scope. A
 successful Google Health API `2xx` response is logged by Home Assistant; a real
 provider write is not claimed until that response is observed.
+
+### Current Google API limitation
+
+The live Google Health API currently advertises `blood-glucose` as `list`, `get`,
+`reconcile`, and rollup operations, but not `create`. A direct POST therefore
+returns HTTP 400 (`Create is not supported for data type blood-glucose`). The
+integration detects that response, keeps all Gluroo/HA sensors working, and stops
+retrying instead of claiming a write succeeded. Google Health `weight` and
+`body-fat` creation are separate supported data types. Actual glucose writes require
+Google to enable creation for `blood-glucose`, an Android Health Connect writer, or
+the legacy Google Fit API while it remains available.
 
 ## Entities
 
