@@ -71,7 +71,7 @@ class GlurooConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domai
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_GLUROO_URL): cv.url,
+                    vol.Required(CONF_GLUROO_URL): str,
                     vol.Required(CONF_GLUROO_TOKEN): str,
                 }
             ),
