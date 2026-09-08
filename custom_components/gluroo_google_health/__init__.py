@@ -53,12 +53,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryNotReady(str(err)) from err
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    async def sync_google_and_refresh_status() -> None:
+        """Sync readings and refresh the status sensor after uploader state changes."""
+        await uploader.async_sync(coordinator.data)
+        coordinator.async_update_listeners()
+
     entry.async_on_unload(
         coordinator.async_add_listener(
-            lambda: hass.async_create_task(uploader.async_sync(coordinator.data))
+            lambda: hass.async_create_task(sync_google_and_refresh_status())
         )
     )
-    await uploader.async_sync(coordinator.data)
+    await sync_google_and_refresh_status()
     return True
 
 
