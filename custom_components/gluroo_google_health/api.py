@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone
+import hashlib
 from typing import Any
 from urllib.parse import urljoin
 
@@ -29,19 +30,30 @@ class GlurooApi:
     async def _get(self, path: str, count: int, optional: bool = False) -> Any:
         """Fetch a Nightscout v1 collection without logging the secret."""
         url = urljoin(self._base_url, path.lstrip("/"))
-        headers = {
-            "Accept": "application/json",
-            "Authorization": f"Bearer {self._token}",
-            "api-secret": self._token,
-        }
-        # Gluroo deployments in the wild have accepted both the Nightscout header
-        # and token query forms. Try headers first so the secret is not in URLs.
-        attempts = ({"count": str(count)}, {"count": str(count), "token": self._token})
-        for index, params in enumerate(attempts):
+        # Gluroo's Global Connect endpoint accepts its API secret as the
+        # Nightscout-compatible token query parameter. Older Nightscout-style
+        # deployments use the SHA-1 api-secret header instead. Do not send the
+        # raw secret header: Gluroo rejects that combination even when token is
+        # also present in the query.
+        attempts = (
+            ({"count": str(count), "token": self._token}, {"Accept": "application/json"}),
+            (
+                {"count": str(count)},
+                {
+                    "Accept": "application/json",
+                    "api-secret": hashlib.sha1(self._token.encode()).hexdigest(),
+                },
+            ),
+            (
+                {"count": str(count)},
+                {"Accept": "application/json", "Authorization": f"Bearer {self._token}"},
+            ),
+        )
+        for index, (params, headers) in enumerate(attempts):
             async with self._session.get(url, params=params, headers=headers) as response:
                 if response.status == 404 and optional:
                     return []
-                if response.status in {401, 403} and index == 0:
+                if response.status in {401, 403} and index < len(attempts) - 1:
                     continue
                 if response.status >= 400:
                     detail = await response.text()
