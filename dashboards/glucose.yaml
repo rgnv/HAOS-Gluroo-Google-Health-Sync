@@ -34,6 +34,34 @@ cards:
         icon: mdi:clock-outline
         color: blue
         vertical: true
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: history-graph
+        title: Glucose · 3 hours
+        entities:
+          - sensor.gluroo_blood_glucose
+        hours_to_show: 3
+        show_names: false
+      - type: history-graph
+        title: Trend · 3 hours
+        entities:
+          - sensor.gluroo_glucose_trend
+        hours_to_show: 3
+        show_names: false
+      - type: history-graph
+        title: Delta · 3 hours
+        entities:
+          - sensor.gluroo_glucose_delta
+        hours_to_show: 3
+        show_names: false
+      - type: history-graph
+        title: Reading age · 3 hours
+        entities:
+          - sensor.gluroo_glucose_reading_age
+        hours_to_show: 3
+        show_names: false
   - type: gauge
     entity: sensor.gluroo_blood_glucose
     name: Current glucose
