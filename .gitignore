@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.coverage
+.env
+*.sqlite3
+
+# Local HA/OAuth material
+client_secret*.json
+google-token*.json

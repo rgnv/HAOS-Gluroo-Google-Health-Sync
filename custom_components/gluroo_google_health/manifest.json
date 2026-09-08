@@ -1,0 +1,13 @@
+{
+  "domain": "gluroo_google_health",
+  "name": "Gluroo Google Health Sync",
+  "codeowners": ["@rgnv"],
+  "config_flow": true,
+  "dependencies": ["application_credentials", "http"],
+  "documentation": "https://github.com/rgnv/HAOS-Gluroo-Google-Health-Sync",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/rgnv/HAOS-Gluroo-Google-Health-Sync/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

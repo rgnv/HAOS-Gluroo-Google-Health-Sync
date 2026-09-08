@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Gluroo",
+        "description": "Paste the Gluroo Global Connect Nightscout URL and API secret token from Gluroo settings. The URL must not include a token query parameter.",
+        "data": {
+          "gluroo_url": "Gluroo Global Connect URL",
+          "gluroo_token": "Gluroo API secret token"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthorize Google Health",
+        "description": "Authorize Home Assistant to continue writing Gluroo glucose readings."
+      }
+    },
+    "error": {
+      "invalid_url": "Enter a valid HTTP or HTTPS URL.",
+      "url_must_not_include_token": "Remove the token query string from the URL and enter it in the token field.",
+      "required": "This field is required."
+    },
+    "abort": {
+      "missing_write_scope": "The Google account did not grant the health-metrics write permission."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Gluroo Google Health options",
+        "data": {
+          "poll_interval": "Poll interval (seconds)",
+          "sync_google": "Upload new glucose readings to Google Health"
+        }
+      }
+    }
+  }
+}
