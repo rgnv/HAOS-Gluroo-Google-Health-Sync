@@ -79,3 +79,30 @@ def test_document_and_nested_status_normalization() -> None:
     assert models.as_documents({"data": []}) == []
     assert models.find_numeric({"openaps": {"iob": 1.25}}, {"iob"}) == 1.25
     assert models.find_numeric({"loop": {"cob": "42"}}, {"cob"}) == 42
+
+
+def test_gluroo_prefixed_status_fields_are_numeric() -> None:
+    assert models.find_numeric({"glurooIob": 1.25}, {"iob"}) == 1.25
+    assert models.find_numeric({"glurooCob": "42"}, {"cob"}) == 42
+
+
+def test_missing_delta_is_derived_from_adjacent_reading() -> None:
+    newest = models.GlucoseReading(
+        "new", 143, datetime(2026, 9, 8, 14, 19, tzinfo=timezone.utc), None, "Flat", {}
+    )
+    older = models.GlucoseReading(
+        "old", 141, datetime(2026, 9, 8, 14, 15, tzinfo=timezone.utc), None, "Flat", {}
+    )
+    derived = models.derive_missing_deltas((newest, older))
+    assert derived[0].delta == 2
+    assert derived[1].delta is None
+
+
+def test_missing_delta_stays_unknown_after_long_gap() -> None:
+    newest = models.GlucoseReading(
+        "new", 143, datetime(2026, 9, 8, 14, 19, tzinfo=timezone.utc), None, "Flat", {}
+    )
+    older = models.GlucoseReading(
+        "old", 141, datetime(2026, 9, 8, 13, 50, tzinfo=timezone.utc), None, "Flat", {}
+    )
+    assert models.derive_missing_deltas((newest, older))[0].delta is None

@@ -12,7 +12,13 @@ import aiohttp
 from homeassistant.helpers.config_entry_oauth2_flow import OAuth2Session
 
 from .const import GOOGLE_HEALTH_BASE
-from .models import GlurooSnapshot, GlucoseReading, as_documents, blood_glucose_payload
+from .models import (
+    GlurooSnapshot,
+    GlucoseReading,
+    as_documents,
+    blood_glucose_payload,
+    derive_missing_deltas,
+)
 
 
 class GlurooApiError(RuntimeError):
@@ -73,11 +79,13 @@ class GlurooApi:
             self._get("api/v1/treatments.json", 20, optional=True),
             self._get("api/v1/devicestatus.json", 5, optional=True),
         )
-        entries = tuple(
-            sorted(
-                (reading for item in as_documents(entries_raw) if (reading := GlucoseReading.from_entry(item))),
-                key=lambda reading: reading.measured_at,
-                reverse=True,
+        entries = derive_missing_deltas(
+            tuple(
+                sorted(
+                    (reading for item in as_documents(entries_raw) if (reading := GlucoseReading.from_entry(item))),
+                    key=lambda reading: reading.measured_at,
+                    reverse=True,
+                )
             )
         )
         treatments = tuple(as_documents(treatments_raw))

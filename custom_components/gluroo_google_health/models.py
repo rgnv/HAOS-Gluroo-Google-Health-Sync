@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
+from dataclasses import dataclass, replace
+from datetime import datetime, timedelta, timezone
 import hashlib
 import math
 from typing import Any
@@ -84,6 +84,27 @@ class GlucoseReading:
         )
 
 
+def derive_missing_deltas(readings: tuple[GlucoseReading, ...]) -> tuple[GlucoseReading, ...]:
+    """Fill missing deltas from the immediately preceding CGM reading.
+
+    Gluroo Global Connect currently omits Nightscout's optional ``delta`` field.
+    Only derive a delta when the adjacent older sample is no more than fifteen
+    minutes away; a long data gap should remain unknown rather than look like a
+    real rate of change.
+    """
+    result: list[GlucoseReading] = []
+    for index, reading in enumerate(readings):
+        if reading.delta is None and index + 1 < len(readings):
+            previous = readings[index + 1]
+            if reading.measured_at - previous.measured_at <= timedelta(minutes=15):
+                reading = replace(
+                    reading,
+                    delta=round(reading.glucose_mgdl - previous.glucose_mgdl, 3),
+                )
+        result.append(reading)
+    return tuple(result)
+
+
 def sample_time(value: datetime) -> dict[str, str]:
     """Build the Google Health API observation time."""
     if value.tzinfo is None or value.utcoffset() is None:
@@ -140,7 +161,9 @@ def find_numeric(value: Any, names: set[str]) -> float | None:
     """Find a named numeric value in nested OpenAPS/Loop status data."""
     if isinstance(value, dict):
         for key, item in value.items():
-            if key.lower() in names:
+            normalized = key.lower().replace("-", "_")
+            suffix = normalized.removeprefix("gluroo").lstrip("_")
+            if normalized in names or suffix in names:
                 number = _number(item)
                 if number is not None:
                     return number
