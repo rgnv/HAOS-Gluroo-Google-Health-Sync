@@ -85,11 +85,15 @@ the legacy Google Fit API while it remains available.
 The integration creates one Gluroo device with these entities:
 
 - **Blood glucose** — latest value in mg/dL, with direction and delta attributes.
-- **Glucose delta** and **Glucose trend**.
+- **Glucose delta** and **Glucose trend**. Gluroo Global Connect currently omits
+  Nightscout's optional `delta` field, so delta is derived from adjacent readings
+  when they are no more than 15 minutes apart.
 - **Glucose reading age** in seconds.
-- **Last treatment**, **Last insulin**, and **Last carbohydrates**.
+- **Last treatment**, **Last insulin**, and **Last carbohydrates**. A treatment that
+  has no carbohydrate field correctly leaves last carbohydrates unknown.
 - **Insulin on board** and **Carbohydrates on board** when reported by the latest
-  device-status payload.
+  device-status payload. Gluroo currently names these fields `glurooIob` and
+  `glurooCob`; both are supported.
 - **Google Health upload** — `ready`, `disabled`, `error`, or
   `provider_unsupported`; the latter is the current Google Health API behavior for
   blood-glucose creation and means no reading was uploaded.
