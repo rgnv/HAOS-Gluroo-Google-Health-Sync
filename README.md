@@ -24,6 +24,8 @@ This project targets the cloud Google Health API, not Android Health Connect.
   and COB sensors when those fields are present in the Gluroo data.
 - Bounded local deduplication so a reading is uploaded at most once per entry ID.
 - Poll interval and Google upload options in the Home Assistant options flow.
+- A ready-to-import `dashboards/glucose.yaml` view plus a Body-dashboard card
+  snippet in `dashboards/body-gluroo-card.yaml`.
 - HACS-compatible repository with no private URLs, tokens, profiles, or device data.
 
 ## HACS installation
@@ -88,9 +90,40 @@ The integration creates one Gluroo device with these entities:
 - **Last treatment**, **Last insulin**, and **Last carbohydrates**.
 - **Insulin on board** and **Carbohydrates on board** when reported by the latest
   device-status payload.
+- **Google Health upload** — `ready`, `disabled`, `error`, or
+  `provider_unsupported`; the latter is the current Google Health API behavior for
+  blood-glucose creation and means no reading was uploaded.
 
 Treatment and device-status sensors remain unavailable when Gluroo does not provide
 those fields; this is expected and avoids inventing values.
+
+## Dashboard
+
+The live HAOS Overview dashboard contains a **Glucose** view and a Gluroo section
+inside the existing **Body** view. The portable YAML sources are:
+
+- [`dashboards/glucose.yaml`](dashboards/glucose.yaml)
+- [`dashboards/body-gluroo-card.yaml`](dashboards/body-gluroo-card.yaml)
+
+The Glucose view includes current glucose, trend, delta, reading age, a 12-hour
+history graph, a 7-day statistics graph, treatment context, and Google Health upload
+status.
+
+## Health Connect on Android
+
+The direct Google Health cloud API currently rejects creation of blood-glucose data.
+Gluroo's Android application has its own Health Connect background synchronization,
+which is the supported path for the phone:
+
+1. In Gluroo on Android, open its Health Connect integration/settings.
+2. Grant Gluroo write access to blood glucose in Android Health Connect.
+3. Disable battery optimization/background restriction for Gluroo.
+4. If desired, enable the Home Assistant Android Companion app's Health Connect
+   **read** sensor so HA can display the phone-side record too.
+
+The direct Gluroo Global Connect → HA path remains the authoritative live sensor path
+in this integration. Details and official links are in
+[`docs/google-health-upload.md`](docs/google-health-upload.md).
 
 ## Security and privacy
 

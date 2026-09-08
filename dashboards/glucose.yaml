@@ -1,0 +1,79 @@
+title: Glucose
+path: glucose
+icon: mdi:water-drop
+badges: []
+cards:
+  - type: heading
+    heading: Gluroo glucose
+    icon: mdi:water-drop
+  - type: grid
+    columns: 4
+    square: false
+    cards:
+      - type: tile
+        entity: sensor.gluroo_blood_glucose
+        name: Blood glucose
+        icon: mdi:water-drop
+        color: red
+        vertical: true
+      - type: tile
+        entity: sensor.gluroo_glucose_trend
+        name: Trend
+        icon: mdi:trending-down
+        color: deep-orange
+        vertical: true
+      - type: tile
+        entity: sensor.gluroo_glucose_delta
+        name: Delta
+        icon: mdi:delta
+        color: amber
+        vertical: true
+      - type: tile
+        entity: sensor.gluroo_glucose_reading_age
+        name: Reading age
+        icon: mdi:clock-outline
+        color: blue
+        vertical: true
+  - type: gauge
+    entity: sensor.gluroo_blood_glucose
+    name: Current glucose
+    min: 40
+    max: 400
+    needle: true
+    severity:
+      green: 80
+      yellow: 180
+      red: 250
+  - type: history-graph
+    title: Glucose · 12 hours
+    entities:
+      - sensor.gluroo_blood_glucose
+    hours_to_show: 12
+    show_names: true
+  - type: statistics-graph
+    title: Glucose · 7 days
+    chart_type: line
+    period: day
+    days_to_show: 7
+    stat_types:
+      - mean
+      - min
+      - max
+    entities:
+      - sensor.gluroo_blood_glucose
+  - type: entities
+    title: Gluroo context
+    show_header_toggle: false
+    entities:
+      - entity: sensor.gluroo_last_treatment
+        name: Latest treatment
+      - entity: sensor.gluroo_last_insulin
+        name: Last insulin
+      - entity: sensor.gluroo_last_carbohydrates
+        name: Last carbohydrates
+      - entity: sensor.gluroo_insulin_on_board
+        name: Insulin on board
+      - entity: sensor.gluroo_carbohydrates_on_board
+        name: Carbohydrates on board
+      - entity: sensor.gluroo_google_health_upload
+        name: Google Health upload

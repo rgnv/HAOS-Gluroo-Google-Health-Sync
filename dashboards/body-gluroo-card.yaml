@@ -1,0 +1,34 @@
+type: vertical-stack
+id: gluroo-body-overview
+cards:
+  - type: heading
+    heading: Gluroo glucose
+    icon: mdi:water-drop
+  - type: grid
+    columns: 3
+    square: false
+    cards:
+      - type: tile
+        entity: sensor.gluroo_blood_glucose
+        name: Glucose
+        icon: mdi:water-drop
+        color: red
+        vertical: true
+      - type: tile
+        entity: sensor.gluroo_glucose_trend
+        name: Trend
+        icon: mdi:trending-down
+        color: deep-orange
+        vertical: true
+      - type: tile
+        entity: sensor.gluroo_glucose_reading_age
+        name: Age
+        icon: mdi:clock-outline
+        color: blue
+        vertical: true
+  - type: history-graph
+    title: Glucose · 12 hours
+    entities:
+      - sensor.gluroo_blood_glucose
+    hours_to_show: 12
+    show_names: true

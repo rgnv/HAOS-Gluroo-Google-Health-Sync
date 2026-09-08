@@ -11,13 +11,14 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import GlurooCoordinator
+from .coordinator import GlurooCoordinator, GoogleUploader
 from .models import GlurooSnapshot, find_numeric
 
 
 async def async_setup_entry(hass, entry, async_add_entities) -> None:
     """Create stable sensors for the configured Gluroo account."""
     coordinator = cast(GlurooCoordinator, entry.runtime_data.coordinator)
+    uploader = cast(GoogleUploader, entry.runtime_data.uploader)
     async_add_entities(
         [
             GlurooGlucoseSensor(coordinator, entry.entry_id),
@@ -29,6 +30,7 @@ async def async_setup_entry(hass, entry, async_add_entities) -> None:
             GlurooCarbsSensor(coordinator, entry.entry_id),
             GlurooIobSensor(coordinator, entry.entry_id),
             GlurooCobSensor(coordinator, entry.entry_id),
+            GlurooGoogleHealthStatusSensor(coordinator, uploader, entry.entry_id),
         ]
     )
 
@@ -207,6 +209,27 @@ class GlurooCobSensor(GlurooSensorBase):
     def native_value(self) -> float | None:
         status = _latest_document(self._snapshot.devicestatus if self._snapshot else ())
         return find_numeric(status, {"cob", "carbs_on_board"})
+
+
+class GlurooGoogleHealthStatusSensor(GlurooSensorBase):
+    """Expose whether the Google Health upload path is usable."""
+
+    _attr_icon = "mdi:google"
+
+    def __init__(self, coordinator, uploader: GoogleUploader, entry_id: str) -> None:
+        super().__init__(coordinator, entry_id, "google_health_status", "Google Health upload")
+        self._uploader = uploader
+
+    @property
+    def native_value(self) -> str:
+        return self._uploader.status
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {
+            "sync_enabled": self._uploader.entry.options.get("sync_google", True),
+            "synced_entry_count": len(self._uploader._synced_ids),
+        }
 
 
 def _first_number(document: dict[str, Any], keys: tuple[str, ...]) -> float | None:
