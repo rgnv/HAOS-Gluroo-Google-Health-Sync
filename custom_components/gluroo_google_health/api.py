@@ -41,7 +41,7 @@ class GlurooApi:
             async with self._session.get(url, params=params, headers=headers) as response:
                 if response.status == 404 and optional:
                     return []
-                if response.status == 401 and index == 0:
+                if response.status in {401, 403} and index == 0:
                     continue
                 if response.status >= 400:
                     detail = await response.text()
