@@ -113,6 +113,16 @@ The Glucose view includes current glucose, trend, delta, reading age, a 12-hour
 history graph, a 7-day statistics graph, treatment context, and Google Health upload
 status.
 
+For a dedicated CGM card, [SugarTV Card](https://github.com/wiltodelta/homeassistant-sugartv-card) (HACS) works with this integration out of the box, reading `Glucose trend` and the `measured_at` timestamp attribute automatically:
+
+```yaml
+type: custom:sugartv-card
+glucose_value: sensor.gluroo_blood_glucose
+insulin_value: sensor.gluroo_insulin_on_board # optional
+```
+
+![SugarTV Card in a wide and a tall dashboard slot](https://raw.githubusercontent.com/wiltodelta/homeassistant-sugartv-card/v0.22.0/sugartv-card-layouts.png)
+
 ## Health Connect on Android
 
 The direct Google Health cloud API currently rejects creation of blood-glucose data.
